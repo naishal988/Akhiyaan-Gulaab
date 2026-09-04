@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akhiyaan Gulaab | Premium Sync</title>
+    <!-- Tailwind for responsive architecture -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Plus Jakarta Sans for that Awwwards winning premium tech typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --neon-blue: #00f2fe;
+            --neon-purple: #4facfe;
+            --glass-bg: rgba(20, 20, 25, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030305;
+            color: #ffffff;
+            overflow: hidden; /* No page scroll, only lyrics scroll */
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .ambient-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -2;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #0a0a10 0%, #030305 100%);
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.5;
+            animation: breathe 12s infinite alternate ease-in-out;
+        }
+        
+        .orb-1 {
+            width: 60vw; height: 60vw;
+            background: rgba(0, 242, 254, 0.15);
+            top: -20vh; left: -20vw;
+        }
+
+        .orb-2 {
+            width: 50vw; height: 50vw;
+            background: rgba(116, 58, 222, 0.15);
+            bottom: -20vh; right: -10vw;
+            animation-delay: -5s;
+        }
+
+        @keyframes breathe {
+            0% { transform: scale(1) translate(0, 0); opacity: 0.4; }
+            100% { transform: scale(1.3) translate(50px, -50px); opacity: 0.7; }
+        }
+
+        .master-container {
+            display: flex;
+            height: calc(100vh - 120px); /* Leave space for bottom player */
+            width: 100%;
+            padding: 2rem 4rem;
+            gap: 4rem;
+            box-sizing: border-box;
+            align-items: center; /* Center everything vertically */
+        }
+
+        /* Left Side: Huge Cover Art */
+        .cover-pane {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end; /* Push towards center */
+            align-items: center;
+        }
+
+        .hero-cover {
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1 / 1;
+            border-radius: 30px;
+            object-fit: cover;
+            box-shadow: 
+                0 30px 60px rgba(0,0,0,0.8), 
+                0 0 100px rgba(0, 242, 254, 0.2);
+            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.6s ease;
+        }
+        
+        .hero-cover:hover {
+            transform: scale(1.03) translateY(-10px);
+            box-shadow: 
+                0 40px 80px rgba(0,0,0,0.9), 
+                0 0 120px rgba(0, 242, 254, 0.3);
+        }
+
+        .lyrics-pane {
+            flex: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .lyrics-scroll-box {
+            height: 80%;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            padding: 30vh 0; /* Huge padding to allow first line in center */
+            
+            /* Cinematic fade masks at top and bottom */
+            mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+        }
+        
+        .lyrics-scroll-box::-webkit-scrollbar { display: none; }
+
+        .lyric-line {
+            font-size: 3rem; /* Huge font for awwwards feel */
+            font-weight: 800;
+            line-height: 1.3;
+            color: rgba(255, 255, 255, 0.15);
+            margin: 2rem 0;
+            transform-origin: left center;
+            transform: translateY(20px) scale(0.9);
+            filter: blur(4px);
+            transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+            cursor: pointer;
+            text-align: left; /* Apple Music style */
+        }
+
+        .lyric-line:hover {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .lyric-line.active {
+            transform: translateY(0) scale(1.1);
+            filter: blur(0px);
+            color: #fff;
+            background: linear-gradient(120deg, #fff 0%, var(--neon-blue) 50%, var(--neon-purple) 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: liquidText 4s linear infinite;
+            text-shadow: 0px 10px 40px rgba(0, 242, 254, 0.3);
+        }
+
+        @keyframes liquidText {
+            to { background-position: 200% center; }
+        }
+
+        .premium-player {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 1400px;
+            height: 90px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 50;
+        }
+
+        /* Player Modules */
+        .player-info { width: 25%; display: flex; align-items: center; gap: 1rem; }
+        .player-controls { width: 50%; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+        .player-extra { width: 25%; display: flex; justify-content: flex-end; align-items: center; gap: 1rem; }
+
+        .mini-cover {
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.1);
+            animation: spin 6s linear infinite;
+            animation-play-state: paused;
+        }
+        .mini-cover.playing { animation-play-state: running; }
+
+        .track-title { font-weight: 700; font-size: 1rem; margin: 0; }
+        .track-artist { font-size: 0.8rem; color: rgba(255,255,255,0.5); margin: 0; }
+
+        .btn-play {
+            width: 46px; height: 46px;
+            background: #fff; color: #000;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-play:hover { transform: scale(1.1); box-shadow: 0 0 20px rgba(255,255,255,0.3); }
+        .btn-play svg { width: 20px; height: 20px; fill: currentColor; margin-left: 2px; }
+        .btn-play.playing svg { margin-left: 0; }
+
+        .progress-container { width: 100%; max-width: 600px; display: flex; align-items: center; gap: 1rem; }
+        .time-label { font-size: 0.75rem; color: rgba(255,255,255,0.5); font-variant-numeric: tabular-nums; min-width: 40px; }
+        
+        .seeker-wrapper {
+            position: relative;
+            flex-grow: 1;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        
+        .seeker-fill {
+            position: absolute;
+            top: 0; left: 0; height: 100%;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            border-radius: 10px;
+            width: 0%;
+            pointer-events: none;
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        input[type="range"] {
+            position: absolute;
+            width: 100%; height: 100%;
+            opacity: 0; cursor: pointer;
+            margin: 0; top: 0; left: 0;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 1024px) {
+            .master-container { flex-direction: column; padding: 2rem; gap: 2rem; }
+            .cover-pane { justify-content: center; flex: 0.4; }
+            .hero-cover { max-width: 300px; }
+            .lyric-line { font-size: 2rem; text-align: center; transform-origin: center; }
+            .lyrics-pane { flex: 0.6; }
+            .player-info, .player-extra { display: none; }
+            .player-controls { width: 100%; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Background -->
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="master-container">
+        
+        <!-- Left: Gigantic Cover Art -->
+        <div class="cover-pane">
+            <!-- Replace with local 'cover.jpg' for final deploy -->
+            <img id="main-cover" src="cover.jpg" alt="Album Art" class="hero-cover">
+        </div>
+
+        <!-- Right: Scrolling Lyrics -->
+        <div class="lyrics-pane">
+            <div class="lyrics-scroll-box" id="lyrics-box">
+                <!-- Javascript will inject lines here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="premium-player">
+        <!-- 1. Info -->
+        <div class="player-info">
+            <img id="mini-cover" src="cover.jpg" class="mini-cover">
+            <div>
+                <p class="track-title">Akhiyaan Gulaab</p>
+                <p class="track-artist">Mitraz | naishalcybersec</p>
+            </div>
+        </div>
+
+        <!-- 2. Controls -->
+        <div class="player-controls">
+            <div class="flex items-center gap-6">
+                <!-- Prev (Visual only) -->
+                <svg class="w-5 h-5 text-gray-400 hover:text-white cursor-pointer transition" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                
+                <!-- Play/Pause -->
+                <div class="btn-play" id="play-btn">
+                    <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <svg id="icon-pause" viewBox="0 0 24 24" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </div>
+
+                <!-- Next (Visual only) -->
+                <svg class="w-5 h-5 text-gray-400 hover:text-white cursor-pointer transition" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </div>
+
+            <div class="progress-container">
+                <span id="time-current" class="time-label">0:00</span>
+                <div class="seeker-wrapper">
+                    <div id="seeker-fill" class="seeker-fill"></div>
+                    <input type="range" id="seek-slider" min="0" max="100" value="0" step="0.1">
+                </div>
+                <span id="time-total" class="time-label">0:00</span>
+            </div>
+        </div>
+
+        <!-- 3. Extras (Volume) -->
+        <div class="player-extra">
+            <svg class="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+            <div class="w-24 h-1.5 bg-white/10 rounded-full relative overflow-hidden cursor-pointer">
+                <div class="absolute top-0 left-0 h-full w-2/3 bg-white rounded-full"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Audio Element -->
+    <!-- Important: Keep local file paths commented out for the Canvas preview. 
+         When deploying, change src to "akhiyaan-gulab.mp3" -->
+    <audio id="audio-engine" preload="metadata"></audio>
+
+    <script>
+        // DOM Init
+        const audio = document.getElementById('audio-engine');
+        const playBtn = document.getElementById('play-btn');
+        const iconPlay = document.getElementById('icon-play');
+        const iconPause = document.getElementById('icon-pause');
+        const miniCover = document.getElementById('mini-cover');
+        const lyricsBox = document.getElementById('lyrics-box');
+        
+        const slider = document.getElementById('seek-slider');
+        const seekerFill = document.getElementById('seeker-fill');
+        const timeCurrent = document.getElementById('time-current');
+        const timeTotal = document.getElementById('time-total');
+
+        let lyricsArray = [];
+        let activeIndex = -1;
+
+        // Smart Environment Setup (Preview vs Cloudflare)
+        const isPreview = window.location.protocol === 'blob:' || window.location.protocol === 'about:';
+
+        if (isPreview) {
+            // We are in Canvas editor preview
+            audio.src = "akhiyaan-gulab.mp3";
+            lyricsArray = [
+                { time: 1.0, text: "Maahiya ve, palkon mein tere kho dil na jaave" },
+                { time: 5.5, text: "Ambars vi ghula-ghula sa laagey" },
+                { time: 9.0, text: "Bas ikk tere hi naal ve" },
+                { time: 13.0, text: "Kisi eh lagdi kamaal teri akhiyaan gulab" },
+                { time: 17.5, text: "Ke naa jaave saada pyaar tainu chhadd ke" },
+                { time: 22.0, text: "Ho jaave tera hi didaar, te koi naa sambhaal" },
+                { time: 27.0, text: "Vi paave saada pyaar tu chhad ke" },
+                { time: 32.0, text: "Kisi eh lagdi kamaal teri akhiyaan gulab" },
+                { time: 37.0, text: "Ki na jaave saada pyaar tainu chhad ke" },
+                { time: 41.5, text: "Ho jaave tera hi didaar, te koi na sambhaal" }
+            ];
+            buildLyrics();
+        } else {
+            // Deployed environment (Cloudflare / Local)
+            // UPDATE THIS: Make sure your audio file name is exactly this in your folder
+            audio.src = "akhiyaan-gulab.mp3"; 
+            
+            // Client-side LRC parsing
+            fetch('akhiyaan.lrc')
+                .then(res => {
+                    if (!res.ok) throw new Error("LRC file not found");
+                    return res.text();
+                })
+                .then(text => {
+                    const lines = text.split('\n');
+                    lines.forEach(line => {
+                        const match = line.match(/\[(\d{2}):(\d{2}\.\d{2,3})\](.*)/);
+                        if (match) {
+                            const minutes = parseInt(match[1], 10);
+                            const seconds = parseFloat(match[2]);
+                            const textPart = match[3].trim();
+                            if (textPart) {
+                                lyricsArray.push({
+                                    time: (minutes * 60) + seconds,
+                                    text: textPart
+                                });
+                            }
+                        }
+                    });
+                    buildLyrics();
+                })
+                .catch(err => {
+                    console.error("LRC Error:", err);
+                    lyricsBox.innerHTML = '<p class="lyric-line active" style="font-size:2rem">Waiting for akhiyaan.lrc file...</p>';
+                });
+        }
+
+        function buildLyrics() {
+            lyricsBox.innerHTML = '';
+            lyricsArray.forEach((lyric, idx) => {
+                const el = document.createElement('div');
+                el.className = 'lyric-line';
+                el.id = `line-${idx}`;
+                el.innerText = lyric.text;
+                
+                // Click to seek
+                el.addEventListener('click', () => {
+                    audio.currentTime = lyric.time;
+                    if (audio.paused) togglePlay();
+                });
+                
+                lyricsBox.appendChild(el);
+            });
+        }
+
+        // Utility: Format seconds to MM:SS
+        const formatTime = (secs) => {
+            if (isNaN(secs)) return "0:00";
+            const m = Math.floor(secs / 60);
+            const s = Math.floor(secs % 60);
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        };
+
+        // Audio Meta Loaded
+        audio.addEventListener('loadedmetadata', () => {
+            slider.max = audio.duration;
+            timeTotal.innerText = formatTime(audio.duration);
+        });
+
+        // Play/Pause Controller
+        const togglePlay = () => {
+            if (audio.paused) {
+                audio.play().then(() => {
+                    iconPlay.style.display = 'none';
+                    iconPause.style.display = 'block';
+                    playBtn.classList.add('playing');
+                    miniCover.classList.add('playing');
+                }).catch(e => console.warn("Auto-play prevented", e));
+            } else {
+                audio.pause();
+                iconPlay.style.display = 'block';
+                iconPause.style.display = 'none';
+                playBtn.classList.remove('playing');
+                miniCover.classList.remove('playing');
+            }
+        };
+        playBtn.addEventListener('click', togglePlay);
+
+        // Seekbar Controller
+        slider.addEventListener('input', () => {
+            audio.currentTime = slider.value;
+            const pct = (slider.value / audio.duration) * 100;
+            seekerFill.style.width = `${pct}%`;
+        });
+
+        // Core Sync Engine - Runs every fraction of a second
+        audio.addEventListener('timeupdate', () => {
+            const current = audio.currentTime;
+            
+            // Update UI Seekbar
+            slider.value = current;
+            timeCurrent.innerText = formatTime(current);
+            seekerFill.style.width = `${(current / audio.duration) * 100}%`;
+
+            // Lyric Sync Algorithm
+            let newIndex = -1;
+            for (let i = 0; i < lyricsArray.length; i++) {
+                // Pre-fire the lyric 0.2s early for visual perfection
+                if (current >= lyricsArray[i].time - 0.2) {
+                    newIndex = i;
+                } else {
+                    break; 
+                }
+            }
+
+            // If lyric changed
+            if (newIndex !== activeIndex && newIndex !== -1) {
+                activeIndex = newIndex;
+                
+                // Clear old actives
+                document.querySelectorAll('.lyric-line').forEach(el => el.classList.remove('active'));
+                
+                // Set new active
+                const activeEl = document.getElementById(`line-${activeIndex}`);
+                if (activeEl) {
+                    activeEl.classList.add('active');
+                    
+                    // Cinematic Scroll - Centers the active element smoothly
+                    activeEl.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }
+        });
+
+        // Audio End Reset
+        audio.addEventListener('ended', () => {
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+            playBtn.classList.remove('playing');
+            miniCover.classList.remove('playing');
+            document.querySelectorAll('.lyric-line').forEach(el => el.classList.remove('active'));
+            lyricsBox.scrollTo({ top: 0, behavior: 'smooth' });
+            activeIndex = -1;
+        });
+
+    </script>
+</body>
+</html>
