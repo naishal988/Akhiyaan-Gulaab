@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akhiyaan Gulaab | Premium Sync</title>
+    <!-- Using Tailwind for rapid layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Importing Poppins font for that modern aesthetic -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #07070a;
+            color: #ffffff;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Animated Background Orbs for extreme aesthetic */
+        .orb-1, .orb-2 {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: -1;
+            animation: float 10s infinite alternate;
+        }
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: rgba(116, 58, 222, 0.3);
+            top: -100px;
+            left: -100px;
+        }
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: rgba(0, 242, 254, 0.2);
+            bottom: -150px;
+            right: -100px;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 50px) scale(1.2); }
+        }
+
+        .main-content {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            padding-bottom: 100px; /* Space for the bottom player */
+            box-sizing: border-box;
+        }
+
+        .left-pane {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .large-cover-art {
+            width: 100%;
+            max-width: 450px;
+            aspect-ratio: 1 / 1;
+            border-radius: 20px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 50px rgba(0, 242, 254, 0.2);
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .large-cover-art:hover {
+            transform: scale(1.02);
+        }
+
+        .right-pane {
+            flex: 1;
+            display: flex;
+            align-items: center; /* Centers the lyrics wrapper vertically */
+        }
+
+        /* Lyrics Area Styling */
+        .lyrics-wrapper {
+            height: 75vh;
+            width: 100%;
+            overflow-y: auto;
+            position: relative;
+            padding: 20vh 40px 30vh 0; /* Adjusted padding for right side */
+            scroll-behavior: smooth;
+            /* Fade out top and bottom for smooth disappearing effect */
+            mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+        }
+
+        .lyrics-wrapper::-webkit-scrollbar {
+            display: none; /* Hide default scrollbar */
+        }
+
+        .lyric-line {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.2);
+            text-align: left; /* Changed to Left Align for Desktop Vibe */
+            margin: 25px 0;
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform: scale(0.85);
+            transform-origin: left center; /* Scales from the left side */
+            filter: blur(3px);
+            cursor: pointer;
+        }
+
+        /* The Killer Active Lyric Animation */
+        .lyric-line.active {
+            transform: scale(1.15);
+            filter: blur(0px);
+            background: linear-gradient(90deg, #00f2fe, #4facfe, #00f2fe);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 3s linear infinite;
+            text-shadow: 0px 10px 30px rgba(0, 242, 254, 0.4);
+        }
+
+        @keyframes shine {
+            to { background-position: 200% center; }
+        }
+
+        .custom-player {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 1200px;
+            background: rgba(25, 25, 35, 0.7);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 15px 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
+        }
+
+        /* 1. LEFT SECTION (Cover & Info) */
+        .player-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 30%;
+            min-width: 200px;
+        }
+
+        .cover-wrapper {
+            position: relative;
+            width: 65px;
+            height: 65px;
+            flex-shrink: 0;
+        }
+        
+        .vinyl-cover {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #111;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            animation: spin 5s linear infinite;
+            animation-play-state: paused;
+        }
+        
+        .vinyl-cover.playing {
+            animation-play-state: running;
+        }
+
+        /* Realistic Vinyl Center Hole */
+        .cover-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            background-color: #1a1a24;
+            border: 1px solid #333;
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .track-details h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .track-details p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 2. CENTER SECTION (Controls & Seekbar) */
+        .player-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 40%;
+            gap: 10px;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .ctrl-btn {
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: color 0.2s;
+            width: 20px;
+            height: 20px;
+        }
+        .ctrl-btn:hover {
+            color: #fff;
+        }
+        .ctrl-btn svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+        
+        .play-btn {
+            background: white;
+            color: black;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .play-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+        }
+        .play-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            margin-left: 2px;
+        }
+        .play-btn.is-playing svg {
+            margin-left: 0;
+        }
+
+        /* Progress Bar Enhancements */
+        .progress-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+        .time-text {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-variant-numeric: tabular-nums;
+            min-width: 40px;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            cursor: pointer;
+            height: 15px;
+            margin: 0;
+        }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 12px;
+            width: 12px;
+            border-radius: 50%;
+            background: #fff;
+            margin-top: -3.5px;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .progress-area:hover input[type=range]::-webkit-slider-thumb {
+            opacity: 1; /* Show thumb only on hover */
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+        }
+
+        .progress-fill {
+            position: absolute;
+            height: 5px;
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            border-radius: 10px;
+            pointer-events: none;
+            z-index: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* 3. RIGHT SECTION (Volume) */
+        .player-right {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            width: 30%;
+            gap: 15px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .volume-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .volume-icon:hover { color: #fff; }
+        
+        .volume-bar {
+            width: 80px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            position: relative;
+        }
+        .volume-fill {
+            width: 70%;
+            height: 100%;
+            background: #fff;
+            border-radius: 10px;
+        }
+
+        /* Make it perfect on Mobile */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            .left-pane {
+                display: none; /* Hide large cover on mobile to save space for lyrics */
+            }
+            .lyric-line {
+                font-size: 2rem;
+                text-align: center;
+                transform-origin: center center;
+            }
+            .custom-player {
+                flex-direction: column;
+                padding: 15px;
+                border-radius: 25px;
+                gap: 10px;
+            }
+            .player-left, .player-center {
+                width: 100%;
+                justify-content: center;
+            }
+            .player-left { margin-bottom: 5px; }
+            .player-right { display: none; /* Hide volume on mobile */ }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Background Orbs -->
+    <div class="orb-1"></div>
+    <div class="orb-2"></div>
+
+    <div class="main-content">
+        <!-- 1. LEFT PANE: Giant Cover Art -->
+        <div class="left-pane">
+            <img id="main-cover" class="large-cover-art" src="/static/cover.jpg" alt="Album Cover Large">
+        </div>
+
+        <!-- 2. RIGHT PANE: Scrolling Lyrics -->
+        <div class="right-pane">
+            <div class="lyrics-wrapper" id="lyrics-container">
+                <!-- Lyrics will be injected here via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Native Audio Player (Source handled by JS dynamically) -->
+    <audio id="audio-player" preload="metadata"></audio>
+
+    <!-- Our Custom Killer Player UI -->
+    <div class="custom-player">
+        
+        <!-- 1. LEFT: Cover Art & Track Info -->
+        <div class="player-left">
+            <div class="cover-wrapper">
+                <img id="cover-art" class="vinyl-cover" src="/static/cover.jpg" alt="Cover">
+            </div>
+            <div class="track-details">
+                <h3>Akhiyaan Gulaab</h3>
+                <p>Mitraz | naishalcybersec</p>
+            </div>
+        </div>
+
+        <!-- 2. CENTER: Play Controls & Timeline -->
+        <div class="player-center">
+            <div class="controls">
+                <!-- Previous Button -->
+                <div class="ctrl-btn">
+                    <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                </div>
+                
+                <!-- Play/Pause -->
+                <div class="play-btn" id="play-pause-btn">
+                    <svg id="icon-play" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <svg id="icon-pause" viewBox="0 0 24 24" style="display: none;">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                    </svg>
+                </div>
+
+                <!-- Next Button -->
+                <div class="ctrl-btn">
+                    <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                </div>
+            </div>
+
+            <!-- Seekbar -->
+            <div class="progress-area relative">
+                <span class="time-text" id="current-time">0:00</span>
+                
+                <div class="relative w-full flex items-center">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+                    <input type="range" id="seek-bar" value="0" step="0.1" class="relative z-10 w-full">
+                </div>
+
+                <span class="time-text text-right" id="duration">0:00</span>
+            </div>
+        </div>
+
+        <!-- 3. RIGHT: Volume Control (Hidden on Mobile) -->
+        <div class="player-right">
+            <svg class="volume-icon" viewBox="0 0 24 24">
+                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+            </svg>
+            <div class="volume-bar">
+                <div class="volume-fill"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const audio = document.getElementById('audio-player');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const iconPlay = document.getElementById('icon-play');
+        const iconPause = document.getElementById('icon-pause');
+        const mainCover = document.getElementById('main-cover');
+        const coverArt = document.getElementById('cover-art');
+        const seekBar = document.getElementById('seek-bar');
+        const progressFill = document.getElementById('progress-fill');
+        const currentTimeEl = document.getElementById('current-time');
+        const durationEl = document.getElementById('duration');
+        const lyricsContainer = document.getElementById('lyrics-container');
+
+        // Fallback Dummy Lyrics
+        let lyricsData = [
+            { time: 1.0, text: "Maahiya ve, palkon mein tere kho dil na jaave" },
+            { time: 5.5, text: "Ambars vi ghula-ghula sa laagey" },
+            { time: 9.0, text: "Bas ikk tere hi naal ve" },
+            { time: 13.0, text: "Kisi eh lagdi kamaal teri akhiyaan gulab" },
+            { time: 17.5, text: "Ke naa jaave saada pyaar tainu chhadd ke" },
+            { time: 22.0, text: "Ho jaave tera hi didaar, te koi naa sambhaal" },
+            { time: 27.0, text: "Vi paave saada pyaar tu chhad ke" },
+            { time: 32.0, text: "Kisi eh lagdi kamaal teri akhiyaan gulab" },
+            { time: 37.0, text: "Ki na jaave saada pyaar tainu chhad ke" },
+            { time: 41.5, text: "Ho jaave tera hi didaar, te koi na sambhaal" }
+        ];
+
+        // Check if we are running in the browser preview or real Flask server
+        if (window.location.protocol === 'blob:' || window.location.protocol === 'about:') {
+            console.log("Preview Mode: Fetch skipped, using demo assets.");
+            audio.src = "https://s3-us-west-2.amazonaws.com/s.cdpn.io/858/outfoxing.mp3";
+            if (mainCover) mainCover.src = "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=800";
+            if (coverArt) coverArt.src = "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=200";
+            renderLyrics();
+        } else {
+            console.log("Flask Mode: Fetching local assets via API.");
+            audio.src = "/api/audio";
+            
+            try {
+                fetch('/api/lyrics')
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data && data.length > 0) {
+                            lyricsData = data;
+                        }
+                        renderLyrics();
+                    })
+                    .catch(err => {
+                        console.error("Lyrics fetch failed:", err);
+                        renderLyrics(); // Fallback on error
+                    });
+            } catch (err) {
+                console.error("API URL Error:", err);
+                renderLyrics();
+            }
+        }
+
+        function renderLyrics() {
+            lyricsContainer.innerHTML = '';
+            lyricsData.forEach((lyric, index) => {
+                const el = document.createElement('div');
+                el.className = 'lyric-line';
+                el.id = 'line-' + index;
+                el.innerText = lyric.text;
+                
+                // Allow seeking by clicking lyrics
+                el.addEventListener('click', () => {
+                    audio.currentTime = lyric.time;
+                    if(audio.paused) togglePlay();
+                });
+
+                lyricsContainer.appendChild(el);
+            });
+        }
+        
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        function togglePlay() {
+            if (audio.paused) {
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(_ => {
+                        iconPlay.style.display = 'none';
+                        iconPause.style.display = 'block';
+                        playPauseBtn.classList.add('is-playing');
+                        coverArt.classList.add('playing');
+                    }).catch(error => {
+                        console.error("Audio play failed:", error);
+                    });
+                }
+            } else {
+                audio.pause();
+                iconPlay.style.display = 'block';
+                iconPause.style.display = 'none';
+                playPauseBtn.classList.remove('is-playing');
+                coverArt.classList.remove('playing');
+            }
+        }
+
+        playPauseBtn.addEventListener('click', togglePlay);
+
+        audio.addEventListener('loadedmetadata', () => {
+            seekBar.max = audio.duration;
+            durationEl.innerText = formatTime(audio.duration);
+        });
+
+        seekBar.addEventListener('input', () => {
+            audio.currentTime = seekBar.value;
+            updateProgressFill();
+        });
+
+        function updateProgressFill() {
+            const percentage = (audio.currentTime / audio.duration) * 100;
+            progressFill.style.width = percentage + '%';
+        }
+
+        let currentActiveIndex = -1;
+
+        audio.addEventListener('timeupdate', () => {
+            const currentTime = audio.currentTime;
+            
+            seekBar.value = currentTime;
+            currentTimeEl.innerText = formatTime(currentTime);
+            updateProgressFill();
+
+            let newActiveIndex = -1;
+            for (let i = 0; i < lyricsData.length; i++) {
+                if (currentTime >= lyricsData[i].time - 0.3) {
+                    newActiveIndex = i;
+                } else {
+                    break;
+                }
+            }
+
+            if (newActiveIndex !== currentActiveIndex && newActiveIndex !== -1) {
+                currentActiveIndex = newActiveIndex;
+                
+                document.querySelectorAll('.lyric-line').forEach(el => {
+                    el.classList.remove('active');
+                });
+                
+                const activeElement = document.getElementById('line-' + currentActiveIndex);
+                if (activeElement) {
+                    activeElement.classList.add('active');
+                    activeElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }
+        });
+
+        audio.addEventListener('ended', () => {
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+            playPauseBtn.classList.remove('is-playing');
+            coverArt.classList.remove('playing');
+            currentActiveIndex = -1;
+            document.querySelectorAll('.lyric-line').forEach(el => el.classList.remove('active'));
+            lyricsContainer.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
