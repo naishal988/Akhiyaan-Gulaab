@@ -1,6 +1,6 @@
 # 🎵 Premium Lyric Sync Player 
 
-**[🔗 View Live Demo Here](https://your-project-name.pages.dev)**
+**[🔗 View Live Demo Here](https://akhiyaan-gulaab.naishalpnadiya988.workers.dev/)**
 
 An ultra-modern, fully static web audio player inspired by the desktop interfaces of Apple Music and Spotify. This project started as a simple C script and evolved into a 100% serverless, Awwwards-winning frontend masterpiece. 
 
