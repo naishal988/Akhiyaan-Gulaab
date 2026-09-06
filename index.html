@@ -28,6 +28,11 @@
             width: 100vw;
         }
 
+        /* Pauses the lyric animation when music is paused */
+        body.is-paused .lyric-line.active {
+            animation-play-state: paused;
+        }
+
         .ambient-bg {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -57,26 +62,28 @@
             animation-delay: -5s;
         }
 
-        @keyframes breathe {
+         @keyframes breathe {
             0% { transform: scale(1) translate(0, 0); opacity: 0.4; }
             100% { transform: scale(1.3) translate(50px, -50px); opacity: 0.7; }
         }
 
         .master-container {
             display: flex;
-            height: calc(100vh - 120px); /* Leave space for bottom player */
-            width: 100%;
-            padding: 2rem 4rem;
-            gap: 4rem;
+            height: calc(100vh - 120px);
+            width: 95%; /* Sync with bottom player */
+            max-width: 1400px; /* Sync with bottom player */
+            margin: 0 auto; /* Center perfectly on screen */
+            padding: 0; /* Removed padding so image touches the exact left boundary */
+            gap: 6%; /* Space between cover and lyrics */
             box-sizing: border-box;
-            align-items: center; /* Center everything vertically */
+            align-items: center;
         }
 
-        /* Left Side: Huge Cover Art */
+       /* Left Side: Huge Cover Art */
         .cover-pane {
-            flex: 1;
+            flex: 0.4; /* Left side 40% */
             display: flex;
-            justify-content: flex-end; /* Push towards center */
+            justify-content: flex-start; /* Locks image perfectly to the left edge */
             align-items: center;
         }
 
@@ -100,11 +107,12 @@
         }
 
         .lyrics-pane {
-            flex: 1;
+            flex: 0.6; /* Right side 60% screen lega lyrics ke liye */
             height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            align-items: flex-start; /* Lyrics ke text block ko bhi left align karega */
         }
 
         .lyrics-scroll-box {
@@ -123,7 +131,7 @@
         .lyric-line {
             font-size: 3rem; /* Huge font for awwwards feel */
             font-weight: 800;
-            line-height: 1.3;
+            line-height: 1.4; /* Increased line-height for better wrapping */
             color: rgba(255, 255, 255, 0.15);
             margin: 2rem 0;
             transform-origin: left center;
@@ -132,6 +140,12 @@
             transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
             cursor: pointer;
             text-align: left; /* Apple Music style */
+            
+            /* FIX: Prevents text cutting off on the right edge */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 90%; 
+            padding-right: 20px;
         }
 
         .lyric-line:hover {
@@ -232,6 +246,7 @@
             width: 100%; height: 100%;
             opacity: 0; cursor: pointer;
             margin: 0; top: 0; left: 0;
+            z-index: 10; /* Ensures sliders are clickable */
         }
 
         /* Mobile Adjustments */
@@ -247,7 +262,7 @@
 
     </style>
 </head>
-<body>
+<body class="is-paused">
 
     <!-- Ambient Background -->
     <div class="ambient-bg">
@@ -311,8 +326,9 @@
         <!-- 3. Extras (Volume) -->
         <div class="player-extra">
             <svg class="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-            <div class="w-24 h-1.5 bg-white/10 rounded-full relative overflow-hidden cursor-pointer">
-                <div class="absolute top-0 left-0 h-full w-2/3 bg-white rounded-full"></div>
+            <div class="w-24 h-1.5 bg-white/10 rounded-full relative flex items-center cursor-pointer">
+                <div id="volume-fill" class="absolute left-0 h-full bg-white rounded-full pointer-events-none" style="width: 100%;"></div>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" class="absolute w-full h-full opacity-0 cursor-pointer">
             </div>
         </div>
     </div>
@@ -335,16 +351,20 @@
         const seekerFill = document.getElementById('seeker-fill');
         const timeCurrent = document.getElementById('time-current');
         const timeTotal = document.getElementById('time-total');
+        
+        const volSlider = document.getElementById('volume-slider');
+        const volFill = document.getElementById('volume-fill');
 
         let lyricsArray = [];
         let activeIndex = -1;
+        let isSeeking = false;
 
         // Smart Environment Setup (Preview vs Cloudflare)
         const isPreview = window.location.protocol === 'blob:' || window.location.protocol === 'about:';
 
         if (isPreview) {
             // We are in Canvas editor preview
-            audio.src = "akhiyaan-gulab.mp3";
+            audio.src = "https://s3-us-west-2.amazonaws.com/s.cdpn.io/858/outfoxing.mp3";
             lyricsArray = [
                 { time: 1.0, text: "Maahiya ve, palkon mein tere kho dil na jaave" },
                 { time: 5.5, text: "Ambars vi ghula-ghula sa laagey" },
@@ -433,6 +453,7 @@
                     iconPause.style.display = 'block';
                     playBtn.classList.add('playing');
                     miniCover.classList.add('playing');
+                    document.body.classList.remove('is-paused'); // Start animation
                 }).catch(e => console.warn("Auto-play prevented", e));
             } else {
                 audio.pause();
@@ -440,25 +461,56 @@
                 iconPause.style.display = 'none';
                 playBtn.classList.remove('playing');
                 miniCover.classList.remove('playing');
+                document.body.classList.add('is-paused'); // Pause animation
             }
         };
         playBtn.addEventListener('click', togglePlay);
 
-        // Seekbar Controller
+        // Feature: Handle Spacebar to Play/Pause smoothly
+        document.addEventListener('keydown', (e) => {
+            // Check if spacebar is pressed
+            if (e.code === 'Space') {
+                e.preventDefault(); // Prevents page from scrolling down
+                togglePlay();
+            }
+        });
+
+        // Seekbar Controller Logic (Fix for glitchy drag)
+        slider.addEventListener('mousedown', () => isSeeking = true);
+        slider.addEventListener('touchstart', () => isSeeking = true, {passive: true});
+
+        slider.addEventListener('mouseup', () => {
+            isSeeking = false;
+            audio.currentTime = slider.value; // Apply final seek time
+        });
+        slider.addEventListener('touchend', () => {
+            isSeeking = false;
+            audio.currentTime = slider.value; // Apply final seek time
+        });
+
         slider.addEventListener('input', () => {
-            audio.currentTime = slider.value;
+            // Only update visuals while dragging, so it doesn't fight timeupdate
             const pct = (slider.value / audio.duration) * 100;
             seekerFill.style.width = `${pct}%`;
+            timeCurrent.innerText = formatTime(slider.value);
+        });
+
+        // Volume Controller Logic
+        volSlider.addEventListener('input', (e) => {
+            audio.volume = e.target.value;
+            volFill.style.width = `${e.target.value * 100}%`;
         });
 
         // Core Sync Engine - Runs every fraction of a second
         audio.addEventListener('timeupdate', () => {
             const current = audio.currentTime;
             
-            // Update UI Seekbar
-            slider.value = current;
-            timeCurrent.innerText = formatTime(current);
-            seekerFill.style.width = `${(current / audio.duration) * 100}%`;
+            // Update UI Seekbar ONLY if user is not actively dragging it
+            if (!isSeeking) {
+                slider.value = current;
+                timeCurrent.innerText = formatTime(current);
+                seekerFill.style.width = `${(current / audio.duration) * 100}%`;
+            }
 
             // Lyric Sync Algorithm
             let newIndex = -1;
@@ -498,6 +550,7 @@
             iconPause.style.display = 'none';
             playBtn.classList.remove('playing');
             miniCover.classList.remove('playing');
+            document.body.classList.add('is-paused');
             document.querySelectorAll('.lyric-line').forEach(el => el.classList.remove('active'));
             lyricsBox.scrollTo({ top: 0, behavior: 'smooth' });
             activeIndex = -1;
